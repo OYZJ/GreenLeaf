@@ -1,17 +1,44 @@
 """
 @author: Zhangjian Ouyang
 @date: 10/25/2018
-
 This file is GUI of project of CS501
 """
 
 import cv2
 import sys
-from PyQt5 import QtGui
-from PyQt5 import QtCore
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import (QLabel, QWidget, QPushButton, QApplication, QLineEdit)
+from PyQt5.QtWidgets import (QMainWindow, QLabel, QWidget, QPushButton, QApplication, QLineEdit)
 from PyQt5.QtCore import QCoreApplication, Qt
+
+
+class Figure_Canvas(FigureCanvas):
+    def __init__(self, parent=None, width=10, height=6, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=100)
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+        self.axes = fig.add_subplot(121)
+        self.axes1 = fig.add_subplot(122)
+
+    def test(self):
+        x = ['SVM', 'RR', 'RT', 'Kmeans']
+        y = [99, 97, 95, 98]
+        width = 0.5
+        self.axes.bar([0, 1, 2, 3], y, width, align="center")
+        self.axes.set_xticks([0, 1, 2, 3])
+        self.axes.set_xticklabels(x)
+        self.axes.set_ylabel('accuracy %')
+        x1 = ['SVM', 'RR', 'RT', 'Kmeans']
+        y1 = [50, 80, 20, 90]
+        width = 0.5
+        self.axes1.bar([0, 1, 2, 3], y1, width, align="center", color='green')
+        self.axes1.set_xticks([0, 1, 2, 3])
+        self.axes1.set_xticklabels(x1)
+        self.axes1.set_ylabel('possibility %')
+
+
 
 
 class GUI(QWidget):
@@ -36,6 +63,15 @@ class GUI(QWidget):
         Setup the GUI
         :return:
         """
+
+        # chart
+        self.graphicview = QtWidgets.QGraphicsView()
+        chart = Figure_Canvas()
+        chart.test()
+        graphicscene = QtWidgets.QGraphicsScene()
+        graphicscene.addWidget(chart)
+        self.graphicview.setScene(graphicscene)
+
 
         # label 1 shows the species
         label1 = QLabel(self)
@@ -80,6 +116,7 @@ class GUI(QWidget):
         # Species button
         btn2 = QPushButton('Species', self)
         btn2.clicked.connect(self.name)
+        btn2.clicked.connect(self.graphicview.show)
         btn2.resize(btn2.sizeHint())
         btn2.move(1700, 300)
 
