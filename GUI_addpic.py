@@ -14,6 +14,34 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QCoreApplication, Qt
 
 
+# class DraggableLabel(QLabel):
+#     def __init__(self,parent,image):
+#         super(QLabel,self).__init__(parent)
+#         self.setPixmap(QPixmap(image))
+#         self.show()
+#     def mousePressEvent(self, event):
+#         if event.button() == Qt.LeftButton:
+#             self.drag_start_position = event.pos()
+#
+#     def mouseMoveEvent(self, event):
+#         if not (event.buttons() & Qt.LeftButton):
+#             return
+#         if (event.pos() - self.drag_start_position).manhattanLength() < QApplication.startDragDistance():
+#             return
+#         drag = QDrag(self)
+#         mimedata = event.mimeData()
+#         mimedata.setText(self.text())
+#         mimedata.setImageData(self.pixmap().toImage())
+#
+#         drag.setMimeData(mimedata)
+#         pixmap = QPixmap(self.size())
+#         painter = QPainter(pixmap)
+#         painter.drawPixmap(self.rect(), self.grab())
+#         painter.end()
+#         drag.setPixmap(pixmap)
+#         drag.setHotSpot(event.pos())
+#         drag.exec_(Qt.CopyAction | Qt.MoveAction)
+
 class Label(QLabel):
 
     def __init__(self, parent):
@@ -26,6 +54,7 @@ class Label(QLabel):
 
         if e.mimeData().hasUrls():
             e.accept()
+            print("Yes")
         else:
             e.ignore()
 
@@ -37,7 +66,6 @@ class Label(QLabel):
         print(self.path)
 
     def get_path(self):
-        self.dropEvent
         print("get_path", self.path)
         return self.path
 
@@ -88,6 +116,18 @@ class GUI(QWidget):
         self.timer_camera.start(30)
         self.timer_camera.timeout.connect(self.pic_capture)
 
+    def paintEvent(self, e):
+        qp = QPainter()
+        qp.begin(self)
+        self.drawBrushes(qp)
+        qp.end()
+
+    def drawBrushes(self, qp):
+        brush = QBrush(Qt.NoBrush)
+        qp.setBrush(brush)
+        qp.drawRect(1200, 40, 450, 600)
+        qp.drawRect(40, 40, 1120, 600)
+
     def initUI(self):
         """
         Setup the GUI
@@ -100,49 +140,85 @@ class GUI(QWidget):
         chart.test()
         graphicscene = QtWidgets.QGraphicsScene()
         graphicscene.addWidget(chart)
+        self.graphicview.setWindowTitle("Data")
         self.graphicview.setScene(graphicscene)
 
 
         # label 1 shows the species
         label1 = QLabel(self)
         label1.setText("Species")
-        label1.move(60, 700)
+        label1.setFont(QFont("Roman times", 8, QFont.Bold))
+        label1.move(60, 660)
         self.qle1 = QLineEdit(self)
-        self.qle1.move(60, 750)
+        self.qle1.move(60, 710)
         self.qle1.textChanged[str].connect(self.name)
 
         # label 2 shows the origin image
         self.label2 = Label(self)
-        path = self.label2.get_path()
-        self.label2.resize(640, 480)
+        self.label2.resize(480, 480)
         pe = QPalette()
         pe.setColor(QPalette.WindowText, Qt.red)
         self.label2.setAutoFillBackground(True)
         pe.setColor(QPalette.Window, Qt.gray)
         self.label2.setPalette(pe)
-        self.label2.setPixmap(QPixmap(path))
-        # print("Path", path)
         self.label2.move(60, 100)
-        # self.pic_capture()
 
         # label 3 shows the processed image
         self.label3 = QLabel(self)
-        self.label3.resize(640, 480)
+        self.label3.resize(480, 480)
         self.label3.setAutoFillBackground(True)
         pe.setColor(QPalette.Window, Qt.gray)
         self.label3.setPalette(pe)
-        self.label3.move(800, 100)
+        self.label3.move(650, 100)
 
-        # label 4
+        # Orginal image label
         self.label4 = QLabel(self)
         self.label4.setAcceptDrops(True)
         self.label4.setText("Original Image")
+        self.label4.setFont(QFont("Roman times", 8, QFont.Bold))
         self.label4.move(60, 60)
 
-        # label 5
+        # Process image label
         self.label5 = QLabel(self)
         self.label5.setText("Processed Image")
-        self.label5.move(800, 60)
+        self.label5.setFont(QFont("Roman times", 8, QFont.Bold))
+        self.label5.move(650, 60)
+
+        # Feature label
+        self.label6 = QLabel(self)
+        self.label6.setText("Feature")
+        self.label6.setFont(QFont("Roman times", 8, QFont.Bold))
+        self.label6.move(1250, 60)
+
+        # Perimeter label
+        label7 = QLabel(self)
+        label7.setText("perimeter")
+        label7.move(1250, 100)
+        self.qle7 = QLineEdit(self)
+        self.qle7.move(1250, 150)
+
+        # Area label
+        label8 = QLabel(self)
+        label8.setText("Area")
+        label8.move(1250, 220)
+        self.qle8 = QLineEdit(self)
+        self.qle8.move(1250, 270)
+
+        # Feature3 label
+        label9 = QLabel(self)
+        label9.setText("feature3")
+        label9.move(1250, 340)
+        self.qle9 = QLineEdit(self)
+        self.qle9.move(1250, 390)
+
+        # Feature4 label
+        label10 = QLabel(self)
+        label10.setText("feature4")
+        label10.move(1250, 460)
+        self.qle10 = QLineEdit(self)
+        self.qle10.move(1250, 510)
+
+
 
         # Quit button
         btn1 = QPushButton('Quit', self)
@@ -157,10 +233,9 @@ class GUI(QWidget):
         btn2.resize(btn2.sizeHint())
         btn2.move(1700, 300)
 
-        # Capture button
+        # Load button
         btn3 = QPushButton('load', self)
         btn3.clicked.connect(self.loadFile)
-        # self.filename
         btn3.resize(btn3.sizeHint())
         btn3.move(1700, 100)
 
@@ -170,7 +245,7 @@ class GUI(QWidget):
         btn4.resize(btn4.sizeHint())
         btn4.move(1700, 200)
 
-        self.setGeometry(600, 600, 2000, 1000)
+        self.setGeometry(600, 600, 2000, 800)
         self.setWindowTitle('CS501: Green Leaf')
         self.show()
         if cv2.waitKey(1) & 0xFF == ord('c'):
@@ -187,12 +262,14 @@ class GUI(QWidget):
     #     # cv2.imshow('', pic)
     #     cv2.imwrite('2018-09-10-1.png', pic)
     def loadFile(self):
+        global fname
         print("load--file")
-        self.fname, _ = QFileDialog.getOpenFileName(self, 'choose pic', './../', 'Image files(*.jpg *.gif *.png)')
-        print(self.fname)
-        print(type(self.fname))
-        self.label2.setPixmap(QPixmap(self.fname))
-        return self.fname
+        fname, _ = QFileDialog.getOpenFileName(self, 'choose pic', './../', 'Image files(*.jpg *.gif *.png)')
+        print(fname)
+        print(type(fname))
+        self.label2.setPixmap(QPixmap(fname))
+        self.label4
+        return fname
 
 
     def name(self):
@@ -202,43 +279,16 @@ class GUI(QWidget):
         """
         self.qle1.setText("Cup")
 
-    # def pic_show(self):
-    #     """
-    #     Show the captured image
-    #     :return:
-    #     """
-    #     ret, frame = self.cap.read()
-    #     frame = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_CUBIC)
-    #     cv2.imwrite('capture.jpg', frame)
-    #     pic = QtGui.QPixmap('capture.jpg')
-    #     self.label3.setPixmap(pic)
-
     def image_process(self):
-        print("1", self.fname)
-        print("2", type(self.fname))
-        image = cv2.imread(self.fname)
+        print("1", fname)
+        print("2", type(fname))
+        image = cv2.imread(fname)
         im_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         cv2.imwrite('processed_image.jpg', im_gray)
         pic = QtGui.QPixmap('processed_image.jpg')
         self.label3.setPixmap(pic)
-
-    # def pic_capture(self):
-    #     """
-    #     show the video stream
-    #     :return:
-    #     """
-    #     ret, frame = self.cap.read()
-    #     frame = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_CUBIC)
-    #     # cv2.imshow('Capture', frame)
-    #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #     showImage = QtGui.QImage(frame.data, frame.shape[1], frame.shape[0], QtGui.QImage.Format_RGB888)
-    #     self.label2.setPixmap(QtGui.QPixmap.fromImage(showImage))
-
-        # if cv2.waitKey(1) & 0xFF == ord('c'):
-        #     cv2.imwrite('2018-09-10-1.jpg', frame)
-        #     break
-        # cap.release()
-        # cv2.destroyAllWindows()
+        self.qle7.setText("12")
+        self.qle8.setText("13213")
 
 
 if __name__ == '__main__':
