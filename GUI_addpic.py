@@ -4,6 +4,7 @@
 This file is GUI of project of CS501
 """
 
+import binary_image
 import cv2
 import sys
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -252,22 +253,15 @@ class GUI(QWidget):
             self.cap.release()
             cv2.destroyAllWindows()
 
-    # def pic_resize(self):
-    #     """
-    #     resize the picture
-    #     :return:
-    #     """
-    #     pic = cv2.imread('2018-09-10.png')
-    #     pic = cv2.resize(pic, (600, 600), interpolation=cv2.INTER_CUBIC)
-    #     # cv2.imshow('', pic)
-    #     cv2.imwrite('2018-09-10-1.png', pic)
+
     def loadFile(self):
         global fname
         print("load--file")
         fname, _ = QFileDialog.getOpenFileName(self, 'choose pic', './../', 'Image files(*.jpg *.gif *.png)')
-        print(fname)
-        print(type(fname))
-        self.label2.setPixmap(QPixmap(fname))
+        pic = cv2.imread(fname)
+        pic = cv2.resize(pic, (480, 480), interpolation=cv2.INTER_CUBIC)
+        cv2.imwrite('test.jpg', pic)
+        self.label2.setPixmap(QPixmap('test.jpg'))
         self.label4
         return fname
 
@@ -282,10 +276,11 @@ class GUI(QWidget):
     def image_process(self):
         print("1", fname)
         print("2", type(fname))
-        image = cv2.imread(fname)
-        im_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        cv2.imwrite('processed_image.jpg', im_gray)
-        pic = QtGui.QPixmap('processed_image.jpg')
+        binary_image.binary('test.jpg')
+        # image = cv2.imread(fname)
+        # im_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # cv2.imwrite('processed_image.jpg', im_gray)
+        pic = QtGui.QPixmap('2.jpg')
         self.label3.setPixmap(pic)
         self.qle7.setText("12")
         self.qle8.setText("13213")
