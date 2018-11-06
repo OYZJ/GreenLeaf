@@ -44,15 +44,16 @@ from PyQt5.QtCore import QCoreApplication, Qt
 #         drag.exec_(Qt.CopyAction | Qt.MoveAction)
 
 class Label(QLabel):
+    """
+    Enable the label can be dropped
+    """
 
     def __init__(self, parent):
         super().__init__(parent)
         self.path = ""
         self.setAcceptDrops(True)
 
-
     def dragEnterEvent(self, e):
-
         if e.mimeData().hasUrls():
             e.accept()
             print("Yes")
@@ -71,8 +72,10 @@ class Label(QLabel):
         return self.path
 
 
-
 class Figure_Canvas(FigureCanvas):
+    """
+    Drawing chart with matplt
+    """
     def __init__(self, parent=None, width=10, height=6, dpi=100):
         fig = Figure(figsize=(width, height), dpi=100)
         FigureCanvas.__init__(self, fig)
@@ -97,10 +100,10 @@ class Figure_Canvas(FigureCanvas):
         self.axes1.set_ylabel('possibility %')
 
 
-
-
 class GUI(QWidget):
-
+    """
+    Main class
+    """
     def __init__(self):
         super().__init__()
         self.timer_camera = QtCore.QTimer()
@@ -158,7 +161,7 @@ class GUI(QWidget):
         self.label2 = Label(self)
         self.label2.resize(480, 480)
         pe = QPalette()
-        pe.setColor(QPalette.WindowText, Qt.red)
+        pe.setColor(QPalette.WindowText, Qt.black)
         self.label2.setAutoFillBackground(True)
         pe.setColor(QPalette.Window, Qt.gray)
         self.label2.setPalette(pe)
@@ -201,24 +204,30 @@ class GUI(QWidget):
         # Area label
         label8 = QLabel(self)
         label8.setText("Area")
-        label8.move(1250, 220)
+        label8.move(1250, 200)
         self.qle8 = QLineEdit(self)
-        self.qle8.move(1250, 270)
+        self.qle8.move(1250, 250)
 
-        # Feature3 label
+        # MinL label
         label9 = QLabel(self)
-        label9.setText("feature3")
-        label9.move(1250, 340)
+        label9.setText("MinL")
+        label9.move(1250, 300)
         self.qle9 = QLineEdit(self)
-        self.qle9.move(1250, 390)
+        self.qle9.move(1250, 350)
 
-        # Feature4 label
+        # MaxL label
         label10 = QLabel(self)
-        label10.setText("feature4")
-        label10.move(1250, 460)
+        label10.setText("MaxL")
+        label10.move(1250, 400)
         self.qle10 = QLineEdit(self)
-        self.qle10.move(1250, 510)
+        self.qle10.move(1250, 450)
 
+        # Eccentricity label
+        label11 = QLabel(self)
+        label11.setText("Eccentricity")
+        label11.move(1250, 500)
+        self.qle11 = QLineEdit(self)
+        self.qle11.move(1250, 550)
 
 
         # Quit button
@@ -247,6 +256,8 @@ class GUI(QWidget):
         btn4.move(1700, 200)
 
         self.setGeometry(600, 600, 2000, 800)
+        pe.setBrush(self.backgroundRole(), QBrush(QPixmap('bg.jpg')))
+        self.setPalette(pe)
         self.setWindowTitle('CS501: Green Leaf')
         self.show()
         if cv2.waitKey(1) & 0xFF == ord('c'):
@@ -255,9 +266,13 @@ class GUI(QWidget):
 
 
     def loadFile(self):
+        """
+        load image
+        :return: image path
+        """
         global fname
         print("load--file")
-        fname, _ = QFileDialog.getOpenFileName(self, 'choose pic', './../', 'Image files(*.jpg *.gif *.png)')
+        fname, _ = QFileDialog.getOpenFileName(self, 'choose pic', 'C:\personal files\programming\Python\CS501\project\Project_Code\Project_Code\GreenLeaf', 'Image files(*.jpg *.gif *.png)')
         pic = cv2.imread(fname)
         pic = cv2.resize(pic, (480, 480), interpolation=cv2.INTER_CUBIC)
         cv2.imwrite('test.jpg', pic)
@@ -274,12 +289,12 @@ class GUI(QWidget):
         self.qle1.setText("Cup")
 
     def image_process(self):
-        print("1", fname)
-        print("2", type(fname))
+        """
+        process image & extract features
+        :return:
+        """
+        print(fname)
         binary_image.binary('test.jpg')
-        # image = cv2.imread(fname)
-        # im_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # cv2.imwrite('processed_image.jpg', im_gray)
         pic = QtGui.QPixmap('2.jpg')
         self.label3.setPixmap(pic)
         self.qle7.setText("12")
