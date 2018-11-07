@@ -3,7 +3,8 @@
 @date: 10/25/2018
 This file is GUI of project of CS501
 """
-
+from Neat_projectcode import Class_prediction
+import morphologicalfeatures
 import binary_image
 import cv2
 import sys
@@ -14,6 +15,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QCoreApplication, Qt
 
+global species_name
+global species_pro
+species_name = [0, 0, 0]
+species_pro = [0, 0, 0]
 
 # class DraggableLabel(QLabel):
 #     def __init__(self,parent,image):
@@ -43,6 +48,7 @@ from PyQt5.QtCore import QCoreApplication, Qt
 #         drag.setHotSpot(event.pos())
 #         drag.exec_(Qt.CopyAction | Qt.MoveAction)
 
+
 class Label(QLabel):
     """
     Enable the label can be dropped
@@ -70,34 +76,6 @@ class Label(QLabel):
     def get_path(self):
         print("get_path", self.path)
         return self.path
-
-
-class Figure_Canvas(FigureCanvas):
-    """
-    Drawing chart with matplt
-    """
-    def __init__(self, parent=None, width=10, height=6, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=100)
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
-        self.axes = fig.add_subplot(121)
-        self.axes1 = fig.add_subplot(122)
-
-    def test(self):
-        x = ['SVM', 'RR', 'RT', 'Kmeans']
-        y = [99, 97, 95, 98]
-        width = 0.5
-        self.axes.bar([0, 1, 2, 3], y, width, align="center")
-        self.axes.set_xticks([0, 1, 2, 3])
-        self.axes.set_xticklabels(x)
-        self.axes.set_ylabel('accuracy %')
-        x1 = ['SVM', 'RR', 'RT', 'Kmeans']
-        y1 = [50, 80, 20, 90]
-        width = 0.5
-        self.axes1.bar([0, 1, 2, 3], y1, width, align="center", color='green')
-        self.axes1.set_xticks([0, 1, 2, 3])
-        self.axes1.set_xticklabels(x1)
-        self.axes1.set_ylabel('possibility %')
 
 
 class GUI(QWidget):
@@ -140,22 +118,30 @@ class GUI(QWidget):
 
         # chart
         self.graphicview = QtWidgets.QGraphicsView()
-        chart = Figure_Canvas()
-        chart.test()
-        graphicscene = QtWidgets.QGraphicsScene()
-        graphicscene.addWidget(chart)
-        self.graphicview.setWindowTitle("Data")
-        self.graphicview.setScene(graphicscene)
+        # chart = Figure_Canvas()
+        # chart.test()
+        # graphicscene = QtWidgets.QGraphicsScene()
+        # graphicscene.addWidget(chart)
+        # self.graphicview.setWindowTitle("Data")
+        # self.graphicview.setScene(graphicscene)
 
+        label0 = QLabel(self)
+        label0.setText("Species")
+        label0.setFont(QFont("Roman times", 8, QFont.Bold))
+        label0.move(60, 660)
+        self.qle0 = QLineEdit(self)
+        self.qle0.move(60, 710)
+        self.qle0.textChanged[str].connect(self.name)
 
         # label 1 shows the species
         label1 = QLabel(self)
-        label1.setText("Species")
+        label1.setText("Predict Species")
         label1.setFont(QFont("Roman times", 8, QFont.Bold))
-        label1.move(60, 660)
+        label1.move(420, 660)
         self.qle1 = QLineEdit(self)
-        self.qle1.move(60, 710)
+        self.qle1.move(420, 710)
         self.qle1.textChanged[str].connect(self.name)
+
 
         # label 2 shows the origin image
         self.label2 = Label(self)
@@ -194,16 +180,16 @@ class GUI(QWidget):
         self.label6.setFont(QFont("Roman times", 8, QFont.Bold))
         self.label6.move(1250, 60)
 
-        # Perimeter label
+        # Area label
         label7 = QLabel(self)
-        label7.setText("perimeter")
+        label7.setText("Area")
         label7.move(1250, 100)
         self.qle7 = QLineEdit(self)
         self.qle7.move(1250, 150)
 
-        # Area label
+        # Perimeter label
         label8 = QLabel(self)
-        label8.setText("Area")
+        label8.setText("Perimeter")
         label8.move(1250, 200)
         self.qle8 = QLineEdit(self)
         self.qle8.move(1250, 250)
@@ -272,12 +258,23 @@ class GUI(QWidget):
         """
         global fname
         print("load--file")
-        fname, _ = QFileDialog.getOpenFileName(self, 'choose pic', 'C:\personal files\programming\Python\CS501\project\Project_Code\Project_Code\GreenLeaf', 'Image files(*.jpg *.gif *.png)')
-        pic = cv2.imread(fname)
-        pic = cv2.resize(pic, (480, 480), interpolation=cv2.INTER_CUBIC)
-        cv2.imwrite('test.jpg', pic)
+        fname, _ = QFileDialog.getOpenFileName(self, 'choose pic', 'C:\personal files\programming\Python\CS501\project\Project_Code\Project_Code', 'Image files(*.jpg *.gif *.png)')
+        pic1 = cv2.imread(fname)
+        pic1 = cv2.resize(pic1, (480, 480), interpolation=cv2.INTER_CUBIC)
+        cv2.imwrite('test.jpg', pic1)
         self.label2.setPixmap(QPixmap('test.jpg'))
-        self.label4
+        testID = int(fname[-8: -4])
+        a, b, species_name, species_pro= Class_prediction(testID)
+        print(species_name, species_pro)
+
+        # self.graphicview = QtWidgets.QGraphicsView()
+        chart = Figure_Canvas(species_name, species_pro)
+        chart.test()
+        graphicscene = QtWidgets.QGraphicsScene()
+        graphicscene.addWidget(chart)
+        self.graphicview.setWindowTitle("Data")
+        self.graphicview.setScene(graphicscene)
+
         return fname
 
 
@@ -286,7 +283,14 @@ class GUI(QWidget):
         Show the species of the image
         :return:
         """
-        self.qle1.setText("Cup")
+        testID = int(fname[-8: -4])
+        a, b, species_name, species_pro= Class_prediction(testID)
+        self.qle0.setText(a)
+        self.qle1.setText(b)
+
+    def data(self):
+        testID = int(fname[-8: -4])
+        return species_name, species_pro
 
     def image_process(self):
         """
@@ -294,11 +298,49 @@ class GUI(QWidget):
         :return:
         """
         print(fname)
-        binary_image.binary('test.jpg')
-        pic = QtGui.QPixmap('2.jpg')
+        binary_image.binary(fname)
+        pic = cv2.imread('2.jpg')
+        pic = cv2.resize(pic, (480, 480), interpolation=cv2.INTER_CUBIC)
+        cv2.imwrite('test2.jpg', pic)
+        pic = QtGui.QPixmap('test2.jpg')
         self.label3.setPixmap(pic)
-        self.qle7.setText("12")
-        self.qle8.setText("13213")
+        fea = morphologicalfeatures.feature_extraction("2.jpg")
+        self.qle7.setText(str("%0.3f"%fea["Area"]))
+        self.qle8.setText(str("%0.3f"%fea["Perimeter"]))
+        self.qle9.setText(str("%0.3f"%fea["MinL"]))
+        self.qle10.setText(str("%0.3f"%fea["MaxL"]))
+        self.qle11.setText(str("%0.3f"%fea["Eccentricity"]))
+
+
+class Figure_Canvas(FigureCanvas):
+    """
+    Drawing chart with matplt
+    """
+    def __init__(self, species_name, species_pro, parent=None, width=10, height=6, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=100)
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+        self.axes = fig.add_subplot(111)
+        self.species_name = species_name
+        self.species_pro = species_pro
+
+    def test(self):
+        print(self.species_pro)
+        print(self.species_name)
+        x = [self.species_name[0], self.species_name[1], self.species_name[2]]
+        y = [self.species_pro[0], self.species_pro[1], self.species_pro[2]]
+        width = 0.5
+        self.axes.bar([0, 1, 2], y, width, align="center")
+        self.axes.set_xticks([0, 1, 2])
+        self.axes.set_xticklabels(x)
+        self.axes.set_ylabel('possibility %')
+        # x1 = ['SVM', 'RR', 'RT', 'Kmeans']
+        # y1 = [50, 80, 20, 90]
+        # width = 0.5
+        # self.axes1.bar([0, 1, 2, 3], y1, width, align="center", color='green')
+        # self.axes1.set_xticks([0, 1, 2, 3])
+        # self.axes1.set_xticklabels(x1)
+        # self.axes1.set_ylabel('possibility %')
 
 
 if __name__ == '__main__':
