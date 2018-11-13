@@ -85,7 +85,7 @@ class GUI(QWidget):
     def __init__(self):
         super().__init__()
         self.timer_camera = QtCore.QTimer()
-        self.cap = cv2.VideoCapture(0)
+        # self.cap = cv2.VideoCapture(0)
         # self.filename = "filename"
         self.initUI()
         # self.slot_init()
@@ -246,9 +246,9 @@ class GUI(QWidget):
         self.setPalette(pe)
         self.setWindowTitle('CS501: Green Leaf')
         self.show()
-        if cv2.waitKey(1) & 0xFF == ord('c'):
-            self.cap.release()
-            cv2.destroyAllWindows()
+        # if cv2.waitKey(1) & 0xFF == ord('c'):
+        #     self.cap.release()
+        #     cv2.destroyAllWindows()
 
 
     def loadFile(self):
@@ -267,7 +267,6 @@ class GUI(QWidget):
         a, b, species_name, species_pro= Class_prediction(testID)
         print(species_name, species_pro)
 
-        # self.graphicview = QtWidgets.QGraphicsView()
         chart = Figure_Canvas(species_name, species_pro)
         chart.test()
         graphicscene = QtWidgets.QGraphicsScene()
